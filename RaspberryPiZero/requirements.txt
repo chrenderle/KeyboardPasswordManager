@@ -1,0 +1,3 @@
+PIL
+pykeepass
+ST7789
