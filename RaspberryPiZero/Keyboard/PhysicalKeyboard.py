@@ -20,12 +20,14 @@ ROW_3 = 19
 ROW_4 = 26
 ROW = [ROW_0, ROW_1, ROW_2, ROW_3, ROW_4]
 
+DEBOUNCE_TIME = 50  # in ns
+
 
 class PhysicalKeyboard:
     on_key_press: callable = None
     on_key_release: callable = None
     __key_states = [False] * (len(ROW) * len(COL))
-    __key_timestamp = []
+    __key_timestamp = [-1] * (len(ROW) * len(COL))
     __some_button_pressed: bool = False
     __lock = None
     __bus = None
@@ -82,12 +84,23 @@ class PhysicalKeyboard:
                     row_index = ROW.index(r)
                     col_index = COL.index(c)
                     key_id = row_index * 7 + col_index
+                    # registered rising edge
                     if GPIO.input(r) == GPIO.HIGH and self.__key_states[key_id] is False:
+                        self.__key_timestamp[key_id] = time.time_ns()
+                    # registered pressed key and is pressed longer than debounce time
+                    elif GPIO.input(r) == GPIO.HIGH and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
+                        # reset timestamp
+                        self.__key_timestamp[key_id] = -1
                         self.__key_states[key_id] = True
                         self.__lock.acquire()
                         self.on_key_press(key_id)
                         self.__lock.release()
+                    # registered falling edge
                     elif GPIO.input(r) == GPIO.LOW and self.__key_states[key_id] is True:
+                        self.__key_timestamp[key_id] = time.time_ns()
+                    elif GPIO.input(r) == GPIO.LOW and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
+                        # reset timestamp
+                        self.__key_timestamp[key_id] = -1
                         self.__key_states[key_id] = False
                         self.__lock.acquire()
                         self.on_key_release(key_id)
