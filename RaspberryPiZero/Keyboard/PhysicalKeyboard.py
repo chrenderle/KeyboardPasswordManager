@@ -108,13 +108,5 @@ class PhysicalKeyboard:
                 GPIO.output(c, GPIO.LOW)
             time.sleep(0.01)
 
-    def __check_some_button_pressed(self):
-        state = False
-        for key in self.__key_states:
-            if key is True:
-                state = True
-                break
-        self.__some_button_pressed = state
-
     def cleanup(self):
         GPIO.cleanup()
