@@ -28,7 +28,6 @@ class PhysicalKeyboard:
     on_key_release: callable = None
     __key_states = [False] * (len(ROW) * len(COL))
     __key_timestamp = [-1] * (len(ROW) * len(COL))
-    __some_button_pressed: bool = False
     __lock = None
     __bus = None
 
