@@ -45,7 +45,7 @@ class PhysicalKeyboard:
             GPIO.output(c, GPIO.HIGH)
         for r in ROW:
             GPIO.setup(r, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            _thread.start_new_thread(self.__button_polling, ())
+        _thread.start_new_thread(self.__button_polling, ())
 
     def __init_i2c(self):
         self.__bus = smbus2.SMBus(1)
@@ -87,17 +87,18 @@ class PhysicalKeyboard:
                     if GPIO.input(r) == GPIO.HIGH and self.__key_states[key_id] is False:
                         self.__key_timestamp[key_id] = time.time_ns()
                     # registered pressed key and is pressed longer than debounce time
-                    elif GPIO.input(r) == GPIO.HIGH and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
+                    if GPIO.input(r) == GPIO.HIGH and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
                         # reset timestamp
                         self.__key_timestamp[key_id] = -1
                         self.__key_states[key_id] = True
                         self.__lock.acquire()
+                        print("key_press")
                         self.on_key_press(key_id)
                         self.__lock.release()
                     # registered falling edge
-                    elif GPIO.input(r) == GPIO.LOW and self.__key_states[key_id] is True:
+                    if GPIO.input(r) == GPIO.LOW and self.__key_states[key_id] is True:
                         self.__key_timestamp[key_id] = time.time_ns()
-                    elif GPIO.input(r) == GPIO.LOW and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
+                    if GPIO.input(r) == GPIO.LOW and time.time_ns() - self.__key_timestamp[key_id] >= DEBOUNCE_TIME and self.__key_timestamp[key_id] != -1:
                         # reset timestamp
                         self.__key_timestamp[key_id] = -1
                         self.__key_states[key_id] = False
