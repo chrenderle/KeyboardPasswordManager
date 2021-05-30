@@ -427,8 +427,11 @@ def database_unlock_button(element: Element):
     password = gui.elements[1].value
     try:
         gui.set_loading(True)
+        time_before = time.time()
         application_state.database = PyKeePass("/home/pi/.keepass/" + application_state.database_name + ".kdbx",
                                                password=password)
+        time_after = time.time()
+        print("time to unlock database: " + int(time_after - time_before))
     except CredentialsError:
         gui.show_popup("wrong credentials", popup_close_event=database_unlock_wrong_credentials_popup)
         return
